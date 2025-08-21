@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sleeper FF Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px 0;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            opacity: 0.8;
+            font-size: 1.1em;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .section h2 {
+            color: #ffd700;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #e0e0e0;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+            backdrop-filter: blur(5px);
+        }
+
+        .input-group input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #ffd700;
+            box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn.secondary {
+            background: linear-gradient(45deg, #74b9ff, #0984e3);
+            box-shadow: 0 4px 15px rgba(116, 185, 255, 0.4);
+        }
+
+        .btn.secondary:hover {
+            box-shadow: 0 6px 20px rgba(116, 185, 255, 0.6);
+        }
+
+        .league-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .league-card:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: #ffd700;
+            transform: translateY(-1px);
+        }
+
+        .league-card.selected {
+            border-color: #ffd700;
+            background: rgba(255, 215, 0, 0.2);
+        }
+
+        .league-name {
+            font-weight: 600;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+
+        .league-details {
+            opacity: 0.8;
+            font-size: 0.9em;
+        }
+
+        .analysis-grid {
+            display: grid;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #ffd700;
+        }
+
+        .stat-title {
+            font-size: 0.9em;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.4em;
+            font-weight: 600;
+            color: #ffd700;
+        }
+
+        .player-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .player-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            border-left: 3px solid #ffd700;
+        }
+
+        .player-name {
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .player-details {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            opacity: 0.7;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #ffd700;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: rgba(255, 107, 107, 0.2);
+            border: 1px solid #ff6b6b;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .success {
+            background: rgba(0, 184, 148, 0.2);
+            border: 1px solid #00b894;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .custom-rules {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 193, 7, 0.1));
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .rule-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+        }
+
+        .rule-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #ffd700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+                margin: 5px;
+            }
+            
+            .header h1 {
+                font-size: 1.5em;
+            }
+            
+            .btn {
+                padding: 12px 20px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏆 Sleeper FF Manager</h1>
+            <p>Dominate your league with custom scoring analysis</p>
+        </div>
+
+        <!-- Custom Rules Display -->
+        <div class="custom-rules">
+            <h3 style="color: #ffd700; margin-bottom: 15px;">🎯 Your League's Custom Rules</h3>
+            <div class="rule-item">
+                <div class="rule-icon">TE</div>
+                <div>Tight Ends get <strong>+15 bonus points per reception</strong></div>
+            </div>
+            <div class="rule-item">
+                <div class="rule-icon">💥</div>
+                <div>Any player catching <strong>60+ yard plays gets +15 bonus</strong></div>
+            </div>
+            <div class="rule-item">
+                <div class="rule-icon">DB</div>
+                <div>Must draft and start a <strong>Defensive Back weekly</strong></div>
+            </div>
+            <div class="rule-item">
+                <div class="rule-icon">8</div>
+                <div>Sacks worth <strong>8 points instead of 2</strong></div>
+            </div>
+            <div class="rule-item">
+                <div class="rule-icon">$</div>
+                <div>Lowest weekly score: <strong>Do rankings OR pay $5</strong></div>
+            </div>
+        </div>
+
+        <!-- User Input Section -->
+        <div id="loginSection" class="section">
+            <h2>🔑 Connect to Sleeper</h2>
+            <div class="input-group">
+                <label for="username">Sleeper Username</label>
+                <input type="text" id="username" placeholder="Enter your Sleeper username">
+            </div>
+            <button class="btn" onclick="loadUserData()">Connect Account</button>
+        </div>
+
+        <!-- League Selection -->
+        <div id="leagueSection" class="section hidden">
+            <h2>🏈 Select Your League</h2>
+            <div id="leaguesList"></div>
+        </div>
+
+        <!-- Analysis Results -->
+        <div id="analysisSection" class="section hidden">
+            <h2>📊 League Analysis</h2>
+            <div id="analysisResults"></div>
+        </div>
+
+        <!-- Strategy Recommendations -->
+        <div id="strategySection" class="section hidden">
+            <h2>🎯 Winning Strategy</h2>
+            <div id="strategyContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let userData = null;
+        let leagues = [];
+        let selectedLeague = null;
+        let playersData = {};
+
+        // Custom scoring rules
+        const CUSTOM_SCORING = {
+            TE_RECEPTION_BONUS: 15,
+            BIG_PLAY_BONUS: 15,
+            SACK_POINTS: 8,
+            WEEKLY_PENALTY: 5
+        };
+
+        // Sleeper API wrapper
+        class SleeperAPI {
+            constructor() {
+                this.baseURL = 'https://api.sleeper.app/v1';
+            }
+
+            async request(endpoint) {
+                try {
+                    const response = await fetch(`${this.baseURL}${endpoint}`);
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    return await response.json();
+                } catch (error) {
+                    console.error('API Request failed:', error);
+                    throw error;
+                }
+            }
+
+            async getUser(username) {
+                return await this.request(`/user/${username}`);
+            }
+
+            async getUserLeagues(userId, season = '2024') {
+                return await this.request(`/user/${userId}/leagues/nfl/${season}`);
+            }
+
+            async getLeagueRosters(leagueId) {
+                return await this.request(`/league/${leagueId}/rosters`);
+            }
+
+            async getLeagueUsers(leagueId) {
+                return await this.request(`/league/${leagueId}/users`);
+            }
+
+            async getPlayers() {
+                return await this.request('/players/nfl');
+            }
+
+            async getNFLState() {
+                return await this.request('/state/nfl');
+            }
+        }
+
+        const api = new SleeperAPI();
+
+        // Utility functions
+        function showLoading(elementId) {
+            document.getElementById(elementId).innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading...</p>
+                </div>
+            `;
+        }
+
+        function showError(message, elementId = null) {
+            const errorHTML = `<div class="error">❌ ${message}</div>`;
+            if (elementId) {
+                document.getElementById(elementId).innerHTML = errorHTML;
+            } else {
+                document.body.insertAdjacentHTML('afterbegin', errorHTML);
+            }
+        }
+
+        function showSuccess(message, elementId = null) {
+            const successHTML = `<div class="success">✅ ${message}</div>`;
+            if (elementId) {
+                document.getElementById(elementId).innerHTML = successHTML;
+            } else {
+                document.body.insertAdjacentHTML('afterbegin', successHTML);
+            }
+        }
+
+        // Main functions
+        async function loadUserData() {
+            const username = document.getElementById('username').value.trim();
+            if (!username) {
+                showError('Please enter your Sleeper username');
+                return;
+            }
+
+            showLoading('loginSection');
+
+            try {
+                userData = await api.getUser(username);
+                if (!userData) {
+                    throw new Error('User not found');
+                }
+
+                leagues = await api.getUserLeagues(userData.user_id);
+                
+                document.getElementById('loginSection').innerHTML = `
+                    <div class="success">✅ Connected as ${userData.display_name || username}</div>
+                `;
+
+                displayLeagues();
+                document.getElementById('leagueSection').classList.remove('hidden');
+
+            } catch (error) {
+                showError(`Failed to load user data: ${error.message}`, 'loginSection');
+            }
+        }
+
+        function displayLeagues() {
+            if (leagues.length === 0) {
+                document.getElementById('leaguesList').innerHTML = '<p>No leagues found for 2024 season.</p>';
+                return;
+            }
+
+            const leaguesHTML = leagues.map(league => `
+                <div class="league-card" onclick="selectLeague('${league.league_id}')">
+                    <div class="league-name">${league.name}</div>
+                    <div class="league-details">
+                        ${league.total_rosters} teams • ${league.status} • Week ${league.settings?.playoff_week_start || 'TBD'} playoffs
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('leaguesList').innerHTML = leaguesHTML;
+        }
+
+        async function selectLeague(leagueId) {
+            selectedLeague = leagues.find(l => l.league_id === leagueId);
+            
+            // Update UI to show selection
+            document.querySelectorAll('.league-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            event.currentTarget.classList.add('selected');
+
+            // Load players data if not already loaded
+            if (Object.keys(playersData).length === 0) {
+                showLoading('analysisSection');
+                document.getElementById('analysisSection').classList.remove('hidden');
+                
+                try {
+                    playersData = await api.getPlayers();
+                } catch (error) {
+                    showError('Failed to load players data', 'analysisSection');
+                    return;
+                }
+            }
+
+            await analyzeLeague();
+        }
+
+        async function analyzeLeague() {
+            if (!selectedLeague) return;
+
+            showLoading('analysisResults');
+
+            try {
+                const rosters = await api.getLeagueRosters(selectedLeague.league_id);
+                const users = await api.getLeagueUsers(selectedLeague.league_id);
+                
+                // Find user's roster
+                const myRoster = rosters.find(r => r.owner_id === userData.user_id);
+                
+                // Analyze tight ends
+                const teAnalysis = analyzeTightEnds(rosters);
+                
+                // Analyze deep threats
+                const deepThreats = analyzeDeepThreats(rosters);
+                
+                // Analyze defensive backs
+                const dbAnalysis = analyzeDefensiveBacks(rosters);
+                
+                // Display results
+                displayAnalysis(teAnalysis, deepThreats, dbAnalysis, myRoster);
+                displayStrategy();
+
+            } catch (error) {
+                showError(`Analysis failed: ${error.message}`, 'analysisResults');
+            }
+        }
+
+        function analyzeTightEnds(rosters) {
+            const tightEnds = [];
+            
+            rosters.forEach(roster => {
+                roster.players?.forEach(playerId => {
+                    const player = playersData[playerId];
+                    if (player && player.fantasy_positions?.includes('TE')) {
+                        // Estimate value with bonus
+                        const projectedReceptions = 4; // Placeholder
+                        const bonusValue = projectedReceptions * CUSTOM_SCORING.TE_RECEPTION_BONUS;
+                        
+                        tightEnds.push({
+                            name: player.full_name,
+                            team: player.team,
+                            projectedBonus: bonusValue,
+                            ownerId: roster.owner_id
+                        });
+                    }
+                });
+            });
+
+            return tightEnds.sort((a, b) => b.projectedBonus - a.projectedBonus).slice(0, 10);
+        }
+
+        function analyzeDeepThreats(rosters) {
+            const deepThreats = [];
+            const bigPlayCandidates = [
+                'Tyreek Hill', 'DK Metcalf', 'Mike Evans', 'Calvin Ridley',
+                'DJ Moore', 'Jaylen Waddle', 'CeeDee Lamb', 'Ja\'Marr Chase'
+            ];
+            
+            rosters.forEach(roster => {
+                roster.players?.forEach(playerId => {
+                    const player = playersData[playerId];
+                    if (player && player.fantasy_positions?.includes('WR')) {
+                        const isBigPlayThreat = bigPlayCandidates.some(name => 
+                            player.full_name?.includes(name.split(' ')[1])
+                        );
+                        
+                        if (isBigPlayThreat) {
+                            deepThreats.push({
+                                name: player.full_name,
+                                team: player.team,
+                                bigPlayPotential: 'High',
+                                ownerId: roster.owner_id
+                            });
+                        }
+                    }
+                });
+            });
+
+            return deepThreats;
+        }
+
+        function analyzeDefensiveBacks(rosters) {
+            const defensiveBacks = [];
+            
+            rosters.forEach(roster => {
+                roster.players?.forEach(playerId => {
+                    const player = playersData[playerId];
+                    if (player && ['DB', 'CB', 'S', 'FS', 'SS'].includes(player.position)) {
+                        const sackPotential = player.position?.includes('S') ? 2.5 : 0.8;
+                        
+                        defensiveBacks.push({
+                            name: player.full_name,
+                            team: player.team,
+                            position: player.position,
+                            sackPotential: sackPotential,
+                            ownerId: roster.owner_id
+                        });
+                    }
+                });
+            });
+
+            return defensiveBacks.sort((a, b) => b.sackPotential - a.sackPotential).slice(0, 8);
+        }
+
+        function displayAnalysis(teAnalysis, deepThreats, dbAnalysis, myRoster) {
+            const myPlayerIds = myRoster?.players || [];
+            const myTEs = teAnalysis.filter(te => 
+                myPlayerIds.some(pid => playersData[pid]?.full_name === te.name)
+            ).length;
+
+            document.getElementById('analysisResults').innerHTML = `
+                <div class="analysis-grid">
+                    <div class="stat-card">
+                        <div class="stat-title">Your Tight Ends</div>
+                        <div class="stat-value">${myTEs}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">League Teams</div>
+                        <div class="stat-value">${selectedLeague.total_rosters}</div>
+                    </div>
+                </div>
+
+                <h3 style="color: #ffd700; margin: 20px 0 10px;">🎯 Top Tight Ends (Bonus Value)</h3>
+                <div class="player-list">
+                    ${teAnalysis.map(te => `
+                        <div class="player-item">
+                            <div class="player-name">${te.name} (${te.team})</div>
+                            <div class="player-details">Projected bonus: +${te.projectedBonus} pts/week</div>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <h3 style="color: #ffd700; margin: 20px 0 10px;">💥 Deep Threat Receivers</h3>
+                <div class="player-list">
+                    ${deepThreats.map(wr => `
+                        <div class="player-item">
+                            <div class="player-name">${wr.name} (${wr.team})</div>
+                            <div class="player-details">Big play potential: ${wr.bigPlayPotential}</div>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <h3 style="color: #ffd700; margin: 20px 0 10px;">🛡️ Top Defensive Backs</h3>
+                <div class="player-list">
+                    ${dbAnalysis.map(db => `
+                        <div class="player-item">
+                            <div class="player-name">${db.name} (${db.team})</div>
+                            <div class="player-details">${db.position} • ${db.sackPotential} projected sacks</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+
+            document.getElementById('strategySection').classList.remove('hidden');
+        }
+
+        function displayStrategy() {
+            document.getElementById('strategyContent').innerHTML = `
+                <div class="custom-rules">
+                    <h3 style="color: #ffd700; margin-bottom: 15px;">🏆 Winning Strategy</h3>
+                    
+                    <div class="rule-item">
+                        <div class="rule-icon">1</div>
+                        <div><strong>Draft Elite TEs Early</strong> - With +15 per reception, top TEs are league winners</div>
+                    </div>
+                    
+                    <div class="rule-item">
+                        <div class="rule-icon">2</div>
+                        <div><strong>Target Big-Play WRs</strong> - Players who get 60+ yard plays are gold</div>
+                    </div>
+                    
+                    <div class="rule-item">
+                        <div class="rule-icon">3</div>
+                        <div><strong>Stream Defensive Backs</strong> - Required position, focus on sack-prone safeties</div>
+                    </div>
+                    
+                    <div class="rule-item">
+                        <div class="rule-icon">4</div>
+                        <div><strong>Never Punt Weeks</strong> - $5 penalty adds up. Always field competitive lineup</div>
+                    </div>
+                    
+                    <div class="rule-item">
+                        <div class="rule-icon">5</div>
+                        <div><strong>Trade for TE Depth</strong> - Having 2-3 startable TEs gives massive advantage</div>
+                    </div>
+                </div>
+
+                <button class="btn secondary" onclick="refreshAnalysis()">🔄 Refresh Analysis</button>
+                <button class="btn" onclick="window.location.href='https://sleeper.app'">🏈 Go to Sleeper App</button>
+            `;
+        }
+
+        function refreshAnalysis() {
+            if (selectedLeague) {
+                analyzeLeague();
+            }
+        }
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Sleeper FF Manager loaded');
+        });
+    </script>
+</body>
+</html>
